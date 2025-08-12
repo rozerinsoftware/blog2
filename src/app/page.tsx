@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
+import { listPostSummaries } from "@/lib/posts";
 
 function Separator({ className = "" }: { className?: string }) {
   return (
@@ -10,37 +11,14 @@ function Separator({ className = "" }: { className?: string }) {
   );
 }
 
-type PostSummary = {
-  id: number;
-  title: string;
-  description: string;
-  date: string; // ISO tarih
-  coverUrl: string;
-};
+// Veri src/lib/posts.ts üzerinden okunuyor
 
 export const metadata: Metadata = {
   title: "Blog Yazıları",
   description: "Son yazılar ve güncellemeler",
 };
 
-const blogPosts: PostSummary[] = [
-  {
-    id: 1,
-    title: "İlk Blog Yazım",
-    description: "Bu, blog projemizin ilk yazısıdır.",
-    date: "2025-08-11",
-    coverUrl:
-      "https://images.unsplash.com/photo-1526378722484-bd91ca387e72?q=80&w=1400&auto=format&fit=crop",
-  },
-  {
-    id: 2,
-    title: "Next.js ile Proje Geliştirme",
-    description: "Next.js kullanarak blog nasıl yapılır anlattım.",
-    date: "2025-08-12",
-    coverUrl:
-      "https://images.unsplash.com/photo-1504639725590-34d0984388bd?q=80&w=1400&auto=format&fit=crop",
-  },
-];
+// Not: Örnek veriler için bkz. src/lib/posts.ts
 
 function formatDate(isoDateString: string): string {
   try {
@@ -55,6 +33,7 @@ function formatDate(isoDateString: string): string {
 }
 
 export default function Home() {
+  const blogPosts = listPostSummaries();
   return (
     <main className="mx-auto max-w-3xl p-6 md:p-10">
       <header className="mb-8">
