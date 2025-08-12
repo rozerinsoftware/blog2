@@ -1,6 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
+
+function Separator({ className = "" }: { className?: string }) {
+  return (
+    <div
+      className={`h-px w-full bg-gradient-to-r from-transparent via-gray-300 to-transparent dark:via-gray-700 ${className}`}
+    />
+  );
+}
 import { notFound } from "next/navigation";
 
 type Post = {
@@ -108,6 +116,7 @@ export default async function PostPage({
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{post.date}</p>
           <p className="mt-2 text-slate-700 dark:text-gray-300">{post.description}</p>
         </header>
+        <Separator className="my-6" />
 
         <section className="mt-6 space-y-4 leading-7 text-slate-800 dark:text-gray-200">
           {post.content.map((paragraph, idx) => (
@@ -115,11 +124,14 @@ export default async function PostPage({
           ))}
 
           {post.highlights && post.highlights.length > 0 && (
+            <>
+              <Separator className="my-6" />
             <ul className="list-disc pl-6 marker:text-slate-500 dark:marker:text-gray-400">
               {post.highlights.map((item, i) => (
                 <li key={i}>{item}</li>
               ))}
             </ul>
+            </>
           )}
         </section>
       </article>

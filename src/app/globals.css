@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f6f7fb; /* yumuşak açık arka plan */
+  --background: #ffffff; /* düz beyaz arka plan */
   --foreground: #0f172a; /* slate-900 */
 }
 
@@ -14,26 +14,13 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0b1020; /* koyu lacivertimsi arka plan */
-    --foreground: #e5e7eb; /* zinc-200 */
+    --background: #ffffff; /* dark modda da beyaz isteniyor */
+    --foreground: #0f172a;
   }
 }
 
 body {
-  /* Hafif renkli odaklar + temel zemin rengi */
-  background:
-    radial-gradient(1200px 600px at 0% 0%, rgba(99, 102, 241, 0.10), transparent 40%), /* indigo */
-    radial-gradient(1000px 500px at 100% 0%, rgba(16, 185, 129, 0.10), transparent 42%), /* emerald */
-    linear-gradient(180deg, var(--background), var(--background));
+  background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
-}
-
-@media (prefers-color-scheme: dark) {
-  body {
-    background:
-      radial-gradient(1200px 600px at 0% 0%, rgba(59, 130, 246, 0.12), transparent 40%), /* blue-500 */
-      radial-gradient(1000px 500px at 100% 0%, rgba(16, 185, 129, 0.10), transparent 42%), /* emerald-500 */
-      linear-gradient(180deg, var(--background), var(--background));
-  }
 }

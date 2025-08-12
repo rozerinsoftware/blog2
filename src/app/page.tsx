@@ -2,6 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 
+function Separator({ className = "" }: { className?: string }) {
+  return (
+    <div
+      className={`h-px w-full bg-gradient-to-r from-transparent via-gray-300 to-transparent dark:via-gray-700 ${className}`}
+    />
+  );
+}
+
 type PostSummary = {
   id: number;
   title: string;
@@ -53,6 +61,7 @@ export default function Home() {
         <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Blog Yazıları</h1>
         <p className="mt-2 text-gray-600">En son yazılar, ipuçları ve duyurular.</p>
       </header>
+      <Separator className="mb-6" />
 
       {blogPosts.length === 0 ? (
         <p className="text-gray-600 dark:text-gray-300">Henüz bir yazı eklenmemiş.</p>
