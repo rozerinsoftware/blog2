@@ -36,9 +36,18 @@ export default function Home() {
   const blogPosts = listPostSummaries();
   return (
     <main className="mx-auto max-w-3xl p-6 md:p-10">
-      <header className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Blog Yazıları</h1>
-        <p className="mt-2 text-gray-600">En son yazılar, ipuçları ve duyurular.</p>
+      <header className="mb-8 flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Blog Yazıları</h1>
+          <p className="mt-2 text-gray-600">En son yazılar, ipuçları ve duyurular.</p>
+        </div>
+        <Link
+          href="/login"
+          className="inline-flex h-9 items-center rounded-md bg-gray-900 px-3 text-sm font-medium text-white hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
+          aria-label="Giriş sayfasına git"
+        >
+          Giriş Yap
+        </Link>
       </header>
       <Separator className="mb-6" />
 
