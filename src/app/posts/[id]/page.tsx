@@ -41,9 +41,10 @@ export async function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }): Promise<Metadata> {
-  const post = getPostById(params.id);
+  const { id } = await params;
+  const post = getPostById(id);
   if (!post) return { title: "Yazı Bulunamadı" };
   return {
     title: `${post.title} | Blog`,
@@ -51,12 +52,13 @@ export async function generateMetadata({
   };
 }
 
-export default function PostPage({
+export default async function PostPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const post = getPostById(params.id);
+  const { id } = await params;
+  const post = getPostById(id);
   if (!post) return notFound();
 
   return (
