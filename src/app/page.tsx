@@ -13,8 +13,6 @@ function Separator({ className = "" }: { className?: string }) {
   );
 }
 
-// Yazılar veritabanından okunur
-
 export const metadata: Metadata = {
   title: "Blog Yazıları",
   description: "Son yazılar ve güncellemeler",
@@ -72,26 +70,31 @@ export default async function Home() {
     "SELECT id, title, description, coverUrl, date FROM posts ORDER BY id DESC"
   );
   const blogPosts = Array.isArray(rows) ? (rows as DbPost[]) : [];
-  const imgPlaceholder = "https://placehold.co/1280x720?text=No+Image";
+
   return (
-    <main className="mx-auto max-w-3xl p-6 md:p-10">
+    <main className="mx-auto max-w-7xl p-6 md:p-10">
       <header className="mb-8 flex items-start justify-between">
         <div>
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Blog Yazıları</h1>
-          <p className="mt-2 text-gray-600">En son yazılar, ipuçları ve duyurular.</p>
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
+            Blog Yazıları
+          </h1>
+          <p className="mt-2 text-gray-600">
+            En son yazılar, ipuçları ve duyurular.
+          </p>
         </div>
       </header>
+
       <Separator className="mb-6" />
 
       {blogPosts.length === 0 ? (
-        <p className="text-gray-600 dark:text-gray-300">Henüz bir yazı eklenmemiş.</p>
+        <p className="text-gray-600 dark:text-gray-300">
+          Henüz bir yazı eklenmemiş.
+        </p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
           {blogPosts.map((post, i) => (
             <MotionFadeIn key={post.id} delay={i * 0.05}>
-              <article
-                className="rounded-2xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md dark:border-white/10 dark:bg-slate-900"
-              >
+              <article className="rounded-2xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md dark:border-white/10 dark:bg-slate-900">
                 <div className="aspect-[4/3] w-full overflow-hidden rounded-t-2xl">
                   <img
                     src={safeImageSrc(post.coverUrl)}
@@ -101,7 +104,7 @@ export default async function Home() {
                 </div>
                 <div className="p-6 md:p-8 space-y-3">
                   <div className="flex items-center gap-3 text-sm">
-                    <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 font-medium text-gray-700 dark:bg白/10 dark:text-gray-300">
+                    <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 font-medium text-gray-700 dark:bg-white/10 dark:text-gray-300">
                       {post.date ? formatDate(String(post.date)) : "Tarih yok"}
                     </span>
                   </div>
@@ -114,7 +117,9 @@ export default async function Home() {
                       {post.title}
                     </Link>
                   </h2>
-                  <p className="text-slate-700 dark:text-gray-300">{post.description}</p>
+                  <p className="text-slate-700 dark:text-gray-300">
+                    {post.description}
+                  </p>
                   <div className="pt-2">
                     <Link
                       href={`/posts/${post.id}`}
