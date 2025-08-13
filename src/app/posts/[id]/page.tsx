@@ -59,6 +59,15 @@ export default async function PostPage({
   const post = await getPostById(id);
   if (!post) return notFound();
 
+  // İçeriği güvenli string'e çevir
+  const rawContent =
+    typeof post.content === "string"
+      ? post.content
+      : post.content == null
+      ? ""
+      : String(post.content);
+  const hasHtmlTags = /<[^>]+>/.test(rawContent);
+
   function formatDate(value: string | Date | null): string {
     if (!value) return "";
     try {
@@ -77,12 +86,7 @@ export default async function PostPage({
 
       <div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-white/10">
         <img
-          src={post.coverUrl && (
-            post.coverUrl.includes('images.unsplash.com') ||
-            post.coverUrl.includes('picsum.photos') ||
-            post.coverUrl.includes('placehold.co') ||
-            post.coverUrl.includes('perspektifyazilim.com')
-          ) ? post.coverUrl : "https://placehold.co/1280x720.png?text=No+Image"}
+          src={(post.coverUrl || "").trim().replace(/^\/+/, '').startsWith('http') ? (post.coverUrl as string) : (post.coverUrl ? `https://${post.coverUrl}` : "https://placehold.co/1280x720.png?text=No+Image")}
           alt={post.title}
           className="h-auto w-full object-cover"
         />
@@ -96,8 +100,14 @@ export default async function PostPage({
         </header>
         <Separator className="my-6" />
 
-        <section className="prose prose-slate max-w-none dark:prose-invert mt-6">
-          <div dangerouslySetInnerHTML={{ __html: post.content }} />
+        <section className="mt-6 text-slate-800 dark:text-gray-200">
+          {rawContent.trim().length === 0 ? (
+            <p className="text-gray-500">İçerik bulunamadı.</p>
+          ) : hasHtmlTags ? (
+            <div className="prose prose-slate max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: rawContent }} />
+          ) : (
+            <div className="whitespace-pre-line">{rawContent}</div>
+          )}
         </section>
       </article>
     </main>

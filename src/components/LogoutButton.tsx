@@ -10,7 +10,7 @@ export default function LogoutButton() {
     if (loading) return;
     setLoading(true);
     try {
-      await fetch("/api/logout", { method: "POST" });
+      await fetch("/api/logout", { method: "POST", credentials: "include" });
       router.push("/login");
       router.refresh();
     } catch {

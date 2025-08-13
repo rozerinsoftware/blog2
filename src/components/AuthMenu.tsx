@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import LogoutButton from "./LogoutButton";
 
 type User = { id: number; email: string; role: string } | null;
@@ -8,11 +9,13 @@ type User = { id: number; email: string; role: string } | null;
 export default function AuthMenu() {
   const [user, setUser] = useState<User | undefined>(undefined);
 
+  const pathname = usePathname();
+
   useEffect(() => {
     let cancelled = false;
     async function load() {
       try {
-        const res = await fetch("/api/me", { cache: "no-store" });
+        const res = await fetch("/api/me", { cache: "no-store", credentials: "include" });
         const data = await res.json();
         if (!cancelled) setUser(data?.user ?? null);
       } catch {
@@ -20,10 +23,15 @@ export default function AuthMenu() {
       }
     }
     load();
+    const onFocus = () => load();
+    window.addEventListener("focus", onFocus);
+    const i = setInterval(load, 30000);
     return () => {
       cancelled = true;
+      window.removeEventListener("focus", onFocus);
+      clearInterval(i);
     };
-  }, []);
+  }, [pathname]);
 
   if (user === undefined) {
     return <div className="h-6 w-20 animate-pulse rounded bg-gray-100" />;

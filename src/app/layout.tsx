@@ -40,7 +40,9 @@ export default async function RootLayout({
           <nav className="mx-auto flex max-w-5xl items-center justify-between p-4">
             <div className="flex items-center gap-4">
               <Link className="font-semibold" href="/" prefetch={false}>Anasayfa</Link>
-              {/* Admin linkini statik payload yerine istemci menüsü belirleyecek */}
+              {payload?.role === 'admin' && (
+                <Link className="text-gray-700 hover:underline" href="/admin" prefetch={false}>Admin</Link>
+              )}
             </div>
             <div className="flex items-center gap-3">
               <AuthMenu />

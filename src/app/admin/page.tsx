@@ -3,6 +3,7 @@ import { verifyAuthToken } from "@/lib/auth";
 import Link from "next/link";
 import AdminPostsPanel from "./posts-panel";
 import LogoutButton from "./LogoutButton";
+import AdminNav from "./AdminNav";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -28,6 +29,9 @@ export default async function AdminPage() {
       <p className="text-gray-600">Hoş geldin, {payload.email}</p>
       <div className="mt-6">
         <LogoutButton />
+      </div>
+      <div className="mt-6">
+        <AdminNav />
       </div>
       <div className="mt-8">
         <AdminPostsPanel />

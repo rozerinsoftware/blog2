@@ -35,12 +35,21 @@ function safeImageSrc(input: string | null | undefined): string {
   const placeholder = "https://placehold.co/1280x720.png?text=No+Image";
   if (!input) return placeholder;
   try {
-    const url = new URL(input);
+    const raw = String(input).trim();
+    const normalized = /^(https?:)?\/\//i.test(raw) ? raw : `https://${raw}`;
+    const url = new URL(normalized);
     const allowedHosts = new Set([
       "images.unsplash.com",
       "picsum.photos",
       "placehold.co",
       "perspektifyazilim.com",
+      "www.perspektifyazilim.com",
+      "codewithmosh.com",
+      "www.codewithmosh.com",
+      "uploads.teachablecdn.com",
+      "encrypted-tbn0.gstatic.com",
+      "gstatic.com",
+      "lh3.googleusercontent.com",
     ]);
     if (!allowedHosts.has(url.hostname)) return placeholder;
     return url.toString();
