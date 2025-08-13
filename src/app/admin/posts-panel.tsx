@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import RichTextEditor from "./RichTextEditor";
+import QuillEditor from "./QuillEditor";
 
 type PostRow = {
   id: number;
@@ -195,13 +195,7 @@ export default function AdminPostsPanel() {
                       className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:outline-none"
                       required
                     />
-                    <RichTextEditor
-                      value={editContent}
-                      onChange={setEditContent}
-                      placeholder="İçerik"
-                      className="w-full"
-                      minHeight={160}
-                    />
+                    <QuillEditor value={editContent} onChange={setEditContent} />
                     <input
                       placeholder="Kapak Görseli URL (opsiyonel)"
                       value={editCoverUrl}
@@ -263,13 +257,7 @@ export default function AdminPostsPanel() {
             className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:outline-none"
             required
           />
-          <RichTextEditor
-            value={content}
-            onChange={setContent}
-            placeholder="İçerik"
-            className="w-full"
-            minHeight={200}
-          />
+          <QuillEditor value={content} onChange={setContent} />
           <input
             placeholder="Kapak Görseli URL (opsiyonel)"
             value={coverUrl}
