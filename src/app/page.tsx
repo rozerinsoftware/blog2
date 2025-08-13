@@ -76,13 +76,13 @@ export default async function Home() {
       {blogPosts.length === 0 ? (
         <p className="text-gray-600 dark:text-gray-300">Henüz bir yazı eklenmemiş.</p>
       ) : (
-        <div className="grid gap-6 md:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {blogPosts.map((post) => (
             <article
               key={post.id}
               className="rounded-2xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md dark:border-white/10 dark:bg-slate-900"
             >
-              <div className="aspect-[16/9] w-full overflow-hidden rounded-t-2xl">
+              <div className="aspect-[4/3] w-full overflow-hidden rounded-t-2xl">
                 <img
                   src={safeImageSrc(post.coverUrl)}
                   alt={post.title}

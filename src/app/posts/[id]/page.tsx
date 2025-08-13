@@ -96,8 +96,8 @@ export default async function PostPage({
         </header>
         <Separator className="my-6" />
 
-        <section className="mt-6 space-y-4 leading-7 text-slate-800 dark:text-gray-200">
-          <p>{post.content}</p>
+        <section className="prose prose-slate max-w-none dark:prose-invert mt-6">
+          <div dangerouslySetInnerHTML={{ __html: post.content }} />
         </section>
       </article>
     </main>

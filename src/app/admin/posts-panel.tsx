@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import RichTextEditor from "./RichTextEditor";
 
 type PostRow = {
   id: number;
@@ -194,12 +195,12 @@ export default function AdminPostsPanel() {
                       className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:outline-none"
                       required
                     />
-                    <textarea
-                      placeholder="İçerik"
+                    <RichTextEditor
                       value={editContent}
-                      onChange={(e) => setEditContent(e.target.value)}
-                      className="min-h-[100px] w-full rounded-md border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:outline-none"
-                      required
+                      onChange={setEditContent}
+                      placeholder="İçerik"
+                      className="w-full"
+                      minHeight={160}
                     />
                     <input
                       placeholder="Kapak Görseli URL (opsiyonel)"
@@ -262,12 +263,12 @@ export default function AdminPostsPanel() {
             className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:outline-none"
             required
           />
-          <textarea
-            placeholder="İçerik"
+          <RichTextEditor
             value={content}
-            onChange={(e) => setContent(e.target.value)}
-            className="min-h-[120px] w-full rounded-md border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:outline-none"
-            required
+            onChange={setContent}
+            placeholder="İçerik"
+            className="w-full"
+            minHeight={200}
           />
           <input
             placeholder="Kapak Görseli URL (opsiyonel)"
