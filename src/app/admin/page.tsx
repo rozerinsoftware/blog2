@@ -3,7 +3,9 @@ import { verifyAuthToken } from "@/lib/auth";
 import Link from "next/link";
 import LogoutButton from "@/components/LogoutButton";
 import AdminNav from "./AdminNav";
-import AdminPostsPanelWrapper from "./AdminPostsPanelWrapper"; // ✅ yeni wrapper dosyayı ekledik
+import AdminPostsPanelWrapper from "./AdminPostsPanelWrapper";
+
+
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
