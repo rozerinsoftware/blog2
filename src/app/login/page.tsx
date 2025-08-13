@@ -53,6 +53,8 @@ export default function LoginPage() {
     setError(null);
     setLoading(true);
     try {
+      // Önce guest id'yi al
+      await fetch("/api/guest-id", { method: "GET", cache: "no-store" });
       const guestRes = await fetch("/api/guest-login", { method: "POST" });
       const guestData = await guestRes.json();
       if (!guestRes.ok) throw new Error(guestData?.message || "Misafir giriş başarısız");
