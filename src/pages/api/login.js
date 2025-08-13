@@ -1,4 +1,4 @@
-import pool from "../../lib/db";
+import pool, { ensureDatabaseAndSchema } from "../../lib/db";
 import bcrypt from "bcryptjs";
 import { signAuthToken, setAuthCookie } from "../../lib/auth";
 
@@ -9,6 +9,7 @@ export default async function handler(req, res) {
   }
 
   try {
+    await ensureDatabaseAndSchema();
     const { email, password } = req.body || {};
 
     if (typeof email !== "string" || typeof password !== "string") {
@@ -18,7 +19,7 @@ export default async function handler(req, res) {
     }
 
     const [rows] = await pool.query(
-      "SELECT id, email, password FROM users WHERE email = ? LIMIT 1",
+      "SELECT id, email, password, role FROM users WHERE email = ? LIMIT 1",
       [email]
     );
 
@@ -36,18 +37,20 @@ export default async function handler(req, res) {
         .json({ success: false, message: "E-posta veya şifre hatalı" });
     }
 
-    const token = signAuthToken({ id: user.id, email: user.email });
+    const token = signAuthToken({ id: user.id, email: user.email, role: user.role });
     setAuthCookie(res, token);
 
     return res.status(200).json({
       success: true,
-      user: { id: user.id, email: user.email },
+      user: { id: user.id, email: user.email, role: user.role },
     });
   } catch (error) {
     console.error("/api/login error:", error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Sunucu hatası" });
+    const message =
+      process.env.NODE_ENV !== "production" && error instanceof Error
+        ? error.message
+        : "Sunucu hatası";
+    return res.status(500).json({ success: false, message });
   }
 }
 

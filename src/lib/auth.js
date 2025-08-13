@@ -6,10 +6,13 @@ const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d"; // örn. 7d, 12h
 
 function getJwtSecret() {
   const secret = process.env.JWT_SECRET;
-  if (!secret) {
-    throw new Error("JWT_SECRET env değişkeni tanımlı değil");
+  if (secret) return secret;
+  // Development fallback to avoid 500s if env is missing
+  if (process.env.NODE_ENV !== "production") {
+    console.warn("[auth] JWT_SECRET bulunamadı, geliştirme için geçici bir anahtar kullanılıyor. .env.local dosyasını oluşturun.");
+    return "dev_secret_change_me";
   }
-  return secret;
+  throw new Error("JWT_SECRET env değişkeni tanımlı değil");
 }
 
 export function signAuthToken(payload) {

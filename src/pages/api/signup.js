@@ -1,4 +1,4 @@
-import pool from "../../lib/db";
+import pool, { ensureDatabaseAndSchema } from "../../lib/db";
 import bcrypt from "bcryptjs";
 import { signAuthToken, setAuthCookie } from "../../lib/auth";
 
@@ -9,6 +9,7 @@ export default async function handler(req, res) {
   }
 
   try {
+    await ensureDatabaseAndSchema();
     const { email, password } = req.body || {};
 
     if (typeof email !== "string" || typeof password !== "string") {
@@ -34,18 +35,22 @@ export default async function handler(req, res) {
 
     // Kaydet
     const [result] = await pool.query(
-      "INSERT INTO users (email, password) VALUES (?, ?)",
+      "INSERT INTO users (email, password, role) VALUES (?, ?, 'user')",
       [trimmedEmail, hashed]
     );
 
     const userId = result?.insertId;
-    const token = signAuthToken({ id: userId, email: trimmedEmail });
+    const token = signAuthToken({ id: userId, email: trimmedEmail, role: 'user' });
     setAuthCookie(res, token);
 
     return res.status(201).json({ success: true, user: { id: userId, email: trimmedEmail } });
   } catch (error) {
     console.error("/api/signup error:", error);
-    return res.status(500).json({ success: false, message: "Sunucu hatası" });
+    const message =
+      process.env.NODE_ENV !== "production" && error instanceof Error
+        ? error.message
+        : "Sunucu hatası";
+    return res.status(500).json({ success: false, message });
   }
 }
 

@@ -22,10 +22,15 @@ export default function LoginPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || "Giriş başarısız");
-      router.push("/");
-      router.refresh();
-    } catch (err: any) {
-      setError(err.message);
+      const role = data?.user?.role;
+      if (role === "admin") {
+        router.push("/admin");
+      } else {
+        router.push("/");
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
     } finally {
       setLoading(false);
     }

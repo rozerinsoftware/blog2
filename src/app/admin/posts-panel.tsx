@@ -27,8 +27,9 @@ export default function AdminPostsPanel() {
         const data = await res.json();
         if (!res.ok) throw new Error(data?.message || "Listeleme hatası");
         setPosts(data.posts || []);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        setError(message);
       } finally {
         setLoading(false);
       }
@@ -48,8 +49,9 @@ export default function AdminPostsPanel() {
       if (!res.ok) throw new Error(data?.message || "Oluşturma hatası");
       // Basit yenileme
       location.reload();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
     }
   }
 

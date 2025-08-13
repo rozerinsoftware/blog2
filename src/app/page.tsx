@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { listPostSummaries } from "@/lib/posts";
+import pool from "@/lib/db";
 
 function Separator({ className = "" }: { className?: string }) {
   return (
@@ -11,14 +11,12 @@ function Separator({ className = "" }: { className?: string }) {
   );
 }
 
-// Veri src/lib/posts.ts üzerinden okunuyor
+// Yazılar veritabanından okunur
 
 export const metadata: Metadata = {
   title: "Blog Yazıları",
   description: "Son yazılar ve güncellemeler",
 };
-
-// Not: Örnek veriler için bkz. src/lib/posts.ts
 
 function formatDate(isoDateString: string): string {
   try {
@@ -32,8 +30,37 @@ function formatDate(isoDateString: string): string {
   }
 }
 
-export default function Home() {
-  const blogPosts = listPostSummaries();
+function safeImageSrc(input: string | null | undefined): string {
+  const placeholder = "https://placehold.co/1280x720.png?text=No+Image";
+  if (!input) return placeholder;
+  try {
+    const url = new URL(input);
+    const allowedHosts = new Set([
+      "images.unsplash.com",
+      "picsum.photos",
+      "placehold.co",
+    ]);
+    if (!allowedHosts.has(url.hostname)) return placeholder;
+    return url.toString();
+  } catch {
+    return placeholder;
+  }
+}
+
+type DbPost = {
+  id: number;
+  title: string;
+  description: string;
+  coverUrl: string | null;
+  date: string | null;
+};
+
+export default async function Home() {
+  const [rows] = await pool.query(
+    "SELECT id, title, description, coverUrl, date FROM posts ORDER BY id DESC"
+  );
+  const blogPosts = Array.isArray(rows) ? (rows as DbPost[]) : [];
+  const imgPlaceholder = "https://placehold.co/1280x720?text=No+Image";
   return (
     <main className="mx-auto max-w-3xl p-6 md:p-10">
       <header className="mb-8 flex items-start justify-between">
@@ -41,13 +68,6 @@ export default function Home() {
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Blog Yazıları</h1>
           <p className="mt-2 text-gray-600">En son yazılar, ipuçları ve duyurular.</p>
         </div>
-        <Link
-          href="/login"
-          className="inline-flex h-9 items-center rounded-md bg-gray-900 px-3 text-sm font-medium text-white hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
-          aria-label="Giriş sayfasına git"
-        >
-          Giriş Yap
-        </Link>
       </header>
       <Separator className="mb-6" />
 
@@ -62,7 +82,7 @@ export default function Home() {
             >
               <div className="aspect-[16/9] w-full overflow-hidden rounded-t-2xl">
                 <Image
-                  src={post.coverUrl}
+                  src={safeImageSrc(post.coverUrl)}
                   alt={post.title}
                   width={1280}
                   height={720}
@@ -73,7 +93,7 @@ export default function Home() {
               <div className="p-6 md:p-8 space-y-3">
                 <div className="flex items-center gap-3 text-sm">
                   <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 font-medium text-gray-700 dark:bg-white/10 dark:text-gray-300">
-                    {formatDate(post.date)}
+                    {post.date ? formatDate(String(post.date)) : "Tarih yok"}
                   </span>
                 </div>
                 <h2 className="text-2xl font-semibold text-slate-900 dark:text-white">

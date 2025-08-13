@@ -1,4 +1,4 @@
-import pool from "../../../lib/db";
+import pool, { ensureDatabaseAndSchema } from "../../../lib/db";
 import { getTokenFromRequest, verifyAuthToken } from "../../../lib/auth";
 
 export default async function handler(req, res) {
@@ -6,6 +6,7 @@ export default async function handler(req, res) {
 
   if (req.method === "GET") {
     try {
+      await ensureDatabaseAndSchema();
       const [rows] = await pool.query(
         "SELECT id, title, description, content, coverUrl, date, created_at, updated_at FROM posts WHERE id = ? LIMIT 1",
         [id]
@@ -15,19 +16,24 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true, post });
     } catch (error) {
       console.error("GET /api/posts/[id] error:", error);
-      return res.status(500).json({ success: false, message: "Sunucu hatası" });
+      const message =
+        process.env.NODE_ENV !== "production" && error instanceof Error
+          ? error.message
+          : "Sunucu hatası";
+      return res.status(500).json({ success: false, message });
     }
   }
 
   // Auth gerekli
   const token = getTokenFromRequest(req);
   const payload = token ? verifyAuthToken(token) : null;
-  if (!payload) {
+  if (!payload || payload.role !== 'admin') {
     return res.status(401).json({ success: false, message: "Yetkisiz" });
   }
 
   if (req.method === "PATCH") {
     try {
+      await ensureDatabaseAndSchema();
       const { title, description, content, coverUrl, date } = req.body || {};
       const [result] = await pool.query(
         "UPDATE posts SET title = COALESCE(?, title), description = COALESCE(?, description), content = COALESCE(?, content), coverUrl = COALESCE(?, coverUrl), date = COALESCE(?, date), updated_at = NOW() WHERE id = ?",
@@ -37,18 +43,27 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true });
     } catch (error) {
       console.error("PATCH /api/posts/[id] error:", error);
-      return res.status(500).json({ success: false, message: "Sunucu hatası" });
+      const message =
+        process.env.NODE_ENV !== "production" && error instanceof Error
+          ? error.message
+          : "Sunucu hatası";
+      return res.status(500).json({ success: false, message });
     }
   }
 
   if (req.method === "DELETE") {
     try {
+      await ensureDatabaseAndSchema();
       const [result] = await pool.query("DELETE FROM posts WHERE id = ?", [id]);
       if (result.affectedRows === 0) return res.status(404).json({ success: false, message: "Bulunamadı" });
       return res.status(200).json({ success: true });
     } catch (error) {
       console.error("DELETE /api/posts/[id] error:", error);
-      return res.status(500).json({ success: false, message: "Sunucu hatası" });
+      const message =
+        process.env.NODE_ENV !== "production" && error instanceof Error
+          ? error.message
+          : "Sunucu hatası";
+      return res.status(500).json({ success: false, message });
     }
   }
 
