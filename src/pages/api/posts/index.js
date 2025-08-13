@@ -2,6 +2,19 @@ import pool, { ensureDatabaseAndSchema } from "../../../lib/db";
 import { getTokenFromRequest, verifyAuthToken } from "../../../lib/auth";
 
 export default async function handler(req, res) {
+  function isValidDateString(value) {
+    if (value == null || value === "") return true; // boş tarih kabul
+    if (typeof value !== "string") return false;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+    const [y, m, d] = value.split("-").map(Number);
+    const dt = new Date(Date.UTC(y, m - 1, d));
+    return (
+      dt.getUTCFullYear() === y &&
+      dt.getUTCMonth() === m - 1 &&
+      dt.getUTCDate() === d
+    );
+  }
+
   if (req.method === "GET") {
     // Public listeleme
     try {
@@ -33,6 +46,9 @@ export default async function handler(req, res) {
       const { title, description, content, coverUrl, date } = req.body || {};
       if (!title || !description || !content) {
         return res.status(400).json({ success: false, message: "Eksik alanlar" });
+      }
+      if (!isValidDateString(date)) {
+        return res.status(400).json({ success: false, message: "Geçersiz tarih formatı. Lütfen YYYY-MM-DD girin." });
       }
 
       const [result] = await pool.query(

@@ -3,6 +3,18 @@ import { getTokenFromRequest, verifyAuthToken } from "../../../lib/auth";
 
 export default async function handler(req, res) {
   const { id } = req.query;
+  function isValidDateString(value) {
+    if (value == null || value === "") return true; // boş tarih kabul
+    if (typeof value !== "string") return false;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+    const [y, m, d] = value.split("-").map(Number);
+    const dt = new Date(Date.UTC(y, m - 1, d));
+    return (
+      dt.getUTCFullYear() === y &&
+      dt.getUTCMonth() === m - 1 &&
+      dt.getUTCDate() === d
+    );
+  }
 
   if (req.method === "GET") {
     try {
@@ -35,6 +47,9 @@ export default async function handler(req, res) {
     try {
       await ensureDatabaseAndSchema();
       const { title, description, content, coverUrl, date } = req.body || {};
+      if (!isValidDateString(date)) {
+        return res.status(400).json({ success: false, message: "Geçersiz tarih formatı. Lütfen YYYY-MM-DD girin." });
+      }
       const [result] = await pool.query(
         "UPDATE posts SET title = COALESCE(?, title), description = COALESCE(?, description), content = COALESCE(?, content), coverUrl = COALESCE(?, coverUrl), date = COALESCE(?, date), updated_at = NOW() WHERE id = ?",
         [title, description, content, coverUrl, date, id]

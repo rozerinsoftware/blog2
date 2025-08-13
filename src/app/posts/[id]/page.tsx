@@ -76,13 +76,15 @@ export default async function PostPage({
       </Link>
 
       <div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-white/10">
-        <Image
-          src={post.coverUrl && (post.coverUrl.includes('images.unsplash.com') || post.coverUrl.includes('picsum.photos') || post.coverUrl.includes('placehold.co')) ? post.coverUrl : "https://placehold.co/1280x720.png?text=No+Image"}
+        <img
+          src={post.coverUrl && (
+            post.coverUrl.includes('images.unsplash.com') ||
+            post.coverUrl.includes('picsum.photos') ||
+            post.coverUrl.includes('placehold.co') ||
+            post.coverUrl.includes('perspektifyazilim.com')
+          ) ? post.coverUrl : "https://placehold.co/1280x720.png?text=No+Image"}
           alt={post.title}
-          width={1280}
-          height={720}
           className="h-auto w-full object-cover"
-          priority
         />
       </div>
 

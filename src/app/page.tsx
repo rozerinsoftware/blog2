@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
 import pool from "@/lib/db";
 
 function Separator({ className = "" }: { className?: string }) {
@@ -39,6 +38,7 @@ function safeImageSrc(input: string | null | undefined): string {
       "images.unsplash.com",
       "picsum.photos",
       "placehold.co",
+      "perspektifyazilim.com",
     ]);
     if (!allowedHosts.has(url.hostname)) return placeholder;
     return url.toString();
@@ -81,13 +81,10 @@ export default async function Home() {
               className="rounded-2xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md dark:border-white/10 dark:bg-slate-900"
             >
               <div className="aspect-[16/9] w-full overflow-hidden rounded-t-2xl">
-                <Image
+                <img
                   src={safeImageSrc(post.coverUrl)}
                   alt={post.title}
-                  width={1280}
-                  height={720}
                   className="h-full w-full object-cover"
-                  priority
                 />
               </div>
               <div className="p-6 md:p-8 space-y-3">

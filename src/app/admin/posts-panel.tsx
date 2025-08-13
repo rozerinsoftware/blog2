@@ -27,6 +27,17 @@ export default function AdminPostsPanel() {
   const [editCoverUrl, setEditCoverUrl] = useState("");
   const [editDate, setEditDate] = useState("");
 
+  function isValidDateString(value: string): boolean {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+    const [y, m, d] = value.split("-").map((v) => Number(v));
+    const dt = new Date(Date.UTC(y, m - 1, d));
+    return (
+      dt.getUTCFullYear() === y &&
+      dt.getUTCMonth() === m - 1 &&
+      dt.getUTCDate() === d
+    );
+  }
+
   async function fetchPostsList() {
     setLoading(true);
     setError(null);
@@ -51,6 +62,10 @@ export default function AdminPostsPanel() {
     e.preventDefault();
     setError(null);
     try {
+      if (date && !isValidDateString(date)) {
+        setError("Geçersiz tarih formatı. Lütfen YYYY-MM-DD girin.");
+        return;
+      }
       const res = await fetch("/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -95,6 +110,10 @@ export default function AdminPostsPanel() {
     if (!editingId) return;
     setError(null);
     try {
+      if (editDate && !isValidDateString(editDate)) {
+        setError("Geçersiz tarih formatı. Lütfen YYYY-MM-DD girin.");
+        return;
+      }
       const res = await fetch(`/api/posts/${editingId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -136,10 +155,21 @@ export default function AdminPostsPanel() {
   }
 
   if (loading) return <p>Yükleniyor...</p>;
-  if (error) return <p className="text-red-600">Hata: {error}</p>;
 
   return (
     <div className="grid gap-8">
+      {error && (
+        <div className="flex items-start justify-between rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          <p>Hata: {error}</p>
+          <button
+            type="button"
+            onClick={() => setError(null)}
+            className="ml-4 rounded bg-red-100 px-2 py-1 text-red-700 hover:bg-red-200"
+          >
+            Kapat
+          </button>
+        </div>
+      )}
       <section>
         <h2 className="mb-3 text-xl font-semibold">Yazılar</h2>
         {posts.length === 0 ? (
