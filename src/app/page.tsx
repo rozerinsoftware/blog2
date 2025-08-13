@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import pool from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+
 function Separator({ className = "" }: { className?: string }) {
   return (
     <div

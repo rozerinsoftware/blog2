@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
-import LogoutButton from "@/components/LogoutButton";
+import AuthMenu from "@/components/AuthMenu";
 import { cookies } from "next/headers";
 import { verifyAuthToken } from "@/lib/auth";
 import "./globals.css";
@@ -22,6 +22,7 @@ export const metadata: Metadata = {
 };
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function RootLayout({
   children,
@@ -39,19 +40,10 @@ export default async function RootLayout({
           <nav className="mx-auto flex max-w-5xl items-center justify-between p-4">
             <div className="flex items-center gap-4">
               <Link className="font-semibold" href="/" prefetch={false}>Anasayfa</Link>
-              {payload?.role === 'admin' && (
-                <Link className="text-gray-700 hover:underline" href="/admin" prefetch={false}>Admin</Link>
-              )}
+              {/* Admin linkini statik payload yerine istemci menüsü belirleyecek */}
             </div>
             <div className="flex items-center gap-3">
-              {!payload ? (
-                <>
-                  <Link className="text-gray-700 hover:underline" href="/login" prefetch={false}>Giriş</Link>
-                  <Link className="rounded-md bg-indigo-600 px-3 py-1.5 text-white hover:bg-indigo-500" href="/signup" prefetch={false}>Kayıt ol</Link>
-                </>
-              ) : (
-                <LogoutButton />
-              )}
+              <AuthMenu />
             </div>
           </nav>
         </header>

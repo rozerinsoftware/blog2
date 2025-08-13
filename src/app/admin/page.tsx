@@ -4,6 +4,9 @@ import Link from "next/link";
 import AdminPostsPanel from "./posts-panel";
 import LogoutButton from "./LogoutButton";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function AdminPage() {
   const cookieStore = await cookies();
   const token = cookieStore.get(process.env.JWT_COOKIE_NAME || "blog_token")?.value || null;
