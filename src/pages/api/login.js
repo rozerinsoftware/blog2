@@ -1,57 +1,18 @@
-import pool, { ensureDatabaseAndSchema } from "../../lib/db";
-import bcrypt from "bcryptjs";
-import { signAuthToken, setAuthCookie } from "../../lib/auth";
+import { supabase } from "@/lib/supabaseClient";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    res.setHeader("Allow", ["POST"]);
-    return res.status(405).json({ success: false, message: "Method Not Allowed" });
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
-  try {
-    await ensureDatabaseAndSchema();
-    const { email, password } = req.body || {};
+  const { email, password } = req.body;
 
-    if (typeof email !== "string" || typeof password !== "string") {
-      return res
-        .status(400)
-        .json({ success: false, message: "Geçersiz giriş verisi" });
-    }
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
 
-    const [rows] = await pool.query(
-      "SELECT id, email, password, role FROM users WHERE email = ? LIMIT 1",
-      [email]
-    );
+  if (error) return res.status(401).json({ error: error.message });
 
-    const user = Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
-    if (!user) {
-      return res
-        .status(401)
-        .json({ success: false, message: "E-posta veya şifre hatalı" });
-    }
-
-    const isValid = await bcrypt.compare(password, user.password);
-    if (!isValid) {
-      return res
-        .status(401)
-        .json({ success: false, message: "E-posta veya şifre hatalı" });
-    }
-
-    const token = signAuthToken({ id: user.id, email: user.email, role: user.role });
-    setAuthCookie(res, token);
-
-    return res.status(200).json({
-      success: true,
-      user: { id: user.id, email: user.email, role: user.role },
-    });
-  } catch (error) {
-    console.error("/api/login error:", error);
-    const message =
-      process.env.NODE_ENV !== "production" && error instanceof Error
-        ? error.message
-        : "Sunucu hatası";
-    return res.status(500).json({ success: false, message });
-  }
+  return res.status(200).json({ user: data.user });
 }
-
-

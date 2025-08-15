@@ -1,139 +1,112 @@
-import type { Metadata } from "next";
+// src/app/page.tsx
+import { supabase } from "@/lib/supabaseClient";
+// import MotionFadeIn from "@/components/MotionFadeIn";
 import Link from "next/link";
-import pool from "@/lib/db";
-import MotionFadeIn from "@/components/MotionFadeIn";
 
 export const dynamic = "force-dynamic";
 
-function Separator({ className = "" }: { className?: string }) {
-  return (
-    <div
-      className={`h-px w-full bg-gradient-to-r from-transparent via-gray-300 to-transparent dark:via-gray-700 ${className}`}
-    />
-  );
-}
-
-export const metadata: Metadata = {
+export const metadata = {
   title: "Blog Yazıları",
   description: "Son yazılar ve güncellemeler",
 };
 
-function formatDate(isoDateString: string): string {
-  try {
-    return new Date(isoDateString).toLocaleDateString("tr-TR", {
-      year: "numeric",
-      month: "long",
-      day: "2-digit",
-    });
-  } catch {
-    return isoDateString;
-  }
-}
-
-function safeImageSrc(input: string | null | undefined): string {
-  const placeholder = "https://placehold.co/1280x720.png?text=No+Image";
-  if (!input) return placeholder;
-  try {
-    const raw = String(input).trim();
-    const normalized = /^(https?:)?\/\//i.test(raw) ? raw : `https://${raw}`;
-    const url = new URL(normalized);
-    const allowedHosts = new Set([
-      "images.unsplash.com",
-      "picsum.photos",
-      "placehold.co",
-      "perspektifyazilim.com",
-      "www.perspektifyazilim.com",
-      "codewithmosh.com",
-      "www.codewithmosh.com",
-      "uploads.teachablecdn.com",
-      "encrypted-tbn0.gstatic.com",
-      "gstatic.com",
-      "lh3.googleusercontent.com",
-    ]);
-    if (!allowedHosts.has(url.hostname)) return placeholder;
-    return url.toString();
-  } catch {
-    return placeholder;
-  }
-}
-
-type DbPost = {
+export type DbPost = {
   id: number;
   title: string;
   description: string;
+  content: string;
   coverUrl: string | null;
   date: string | null;
+  created_at: string | null;
+  updated_at: string | null;
 };
 
-export default async function Home() {
-  const [rows] = await pool.query(
-    "SELECT id, title, description, coverUrl, date FROM posts ORDER BY id DESC"
-  );
-  const blogPosts = Array.isArray(rows) ? (rows as DbPost[]) : [];
+function Separator({ className = "" }: { className?: string }) {
+  return <div className={`h-px w-full bg-gray-300 dark:bg-gray-700 ${className}`} />;
+}
+
+function safeImageSrc(input: string | null | undefined): string {
+  return input || "https://placehold.co/1280x720.png?text=No+Image";
+}
+
+function formatDate(date: string | null): string {
+  if (!date) return "Tarih yok";
+  return new Date(date).toLocaleDateString("tr-TR");
+}
+
+export default async function BlogPage() {
+  console.log("🔍 Supabase URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
+  console.log("🔍 Supabase Key exists:", !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+
+  let blogPosts: DbPost[] = [];
+  let error: string | null = null;
+
+  try {
+    console.log("📡 Supabase'den veri çekiliyor...");
+    
+    const { data, error: supabaseError } = await supabase
+      .from("posts")
+      .select("id, title, description, content, coverUrl, date, created_at, updated_at")
+      .order("id", { ascending: false });
+
+    if (supabaseError) {
+      console.error("❌ Supabase Error:", supabaseError);
+      error = supabaseError.message || "Supabase hatası";
+    } else {
+      console.log("✅ Supabase'den gelen data:", data);
+      blogPosts = (data as DbPost[]) || [];
+      console.log("📊 Post sayısı:", blogPosts.length);
+    }
+  } catch (err) {
+    console.error("❌ Catch Error:", err);
+    error = err instanceof Error ? err.message : "Bilinmeyen hata";
+  }
 
   return (
     <main className="mx-auto max-w-7xl p-6 md:p-10">
-      <header className="mb-8 flex items-start justify-between">
-        <div>
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-            Blog Yazıları
-          </h1>
-          <p className="mt-2 text-gray-600">
-            En son yazılar, ipuçları ve duyurular.
-          </p>
-        </div>
+      <header className="mb-8">
+        <h1 className="text-3xl md:text-4xl font-bold">Blog Yazıları</h1>
+        <p className="mt-2 text-gray-600">En son yazılar ve duyurular</p>
       </header>
 
       <Separator className="mb-6" />
 
-      {blogPosts.length === 0 ? (
-        <p className="text-gray-600 dark:text-gray-300">
-          Henüz bir yazı eklenmemiş.
-        </p>
+      {/* Debug Bilgileri */}
+      <div className="mb-6 p-4 bg-gray-100 rounded-lg text-sm">
+        <h3 className="font-bold mb-2">🔧 Debug Bilgileri:</h3>
+        <p>Supabase URL: {process.env.NEXT_PUBLIC_SUPABASE_URL || "❌ Tanımlanmamış"}</p>
+        <p>Supabase Key: {process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? "✅ Tanımlanmış" : "❌ Tanımlanmamış"}</p>
+        <p>Error: {error ? String(JSON.stringify(error, null, 2)) : "Yok"}</p>
+        <p>Post Sayısı: {blogPosts.length}</p>
+      </div>
+
+      {error && (
+        <div className="mb-6 p-4 bg-red-100 border border-red-400 rounded">
+          <p className="text-red-700">
+            <strong>Hata:</strong> {error}
+          </p>
+        </div>
+      )}
+
+      {blogPosts.length === 0 && !error ? (
+        <p>Henüz bir yazı eklenmemiş.</p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
-          {blogPosts.map((post, i) => (
-            <MotionFadeIn key={post.id} delay={i * 0.05}>
-              <article className="flex flex-col h-full rounded-2xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md dark:border-white/10 dark:bg-slate-900">
-                <div className="aspect-[4/3] w-full overflow-hidden rounded-t-2xl flex-shrink-0">
-                  <img
-                    src={safeImageSrc(post.coverUrl)}
-                    alt={post.title}
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-                <div className="p-6 md:p-8 flex flex-col flex-grow justify-between">
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3 text-sm">
-                      <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 font-medium text-gray-700 dark:bg-white/10 dark:text-gray-300">
-                        {post.date ? formatDate(String(post.date)) : "Tarih yok"}
-                      </span>
-                    </div>
-                    <h2 className="text-2xl font-semibold text-slate-900 dark:text-white">
-                      <Link
-                        href={`/posts/${post.id}`}
-                        className="hover:underline"
-                        aria-label={`${post.title} yazısını oku`}
-                      >
-                        {post.title}
-                      </Link>
-                    </h2>
-                    <p className="text-slate-700 dark:text-gray-300">
-                      {post.description}
-                    </p>
-                  </div>
-                  <div className="pt-4">
-                    <Link
-                      href={`/posts/${post.id}`}
-                      className="inline-flex items-center justify-center gap-1 rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 w-full"
-                      aria-label={`${post.title} yazısının detaylarına git`}
-                    >
-                      Oku <span aria-hidden>→</span>
-                    </Link>
-                  </div>
-                </div>
-              </article>
-            </MotionFadeIn>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+          {blogPosts.map((post) => (
+            <article key={post.id} className="flex flex-col border p-4 rounded-lg shadow-sm">
+              <img
+                src={safeImageSrc(post.coverUrl)}
+                alt={post.title}
+                className="h-48 w-full object-cover rounded"
+              />
+              <h2 className="text-xl font-semibold mt-2">
+                <Link href={`/posts/${post.id}`}>{post.title}</Link>
+              </h2>
+              <p className="mt-1 text-gray-700">{post.description}</p>
+              <span className="mt-2 text-sm text-gray-500">
+                {formatDate(post.date || post.created_at)}
+              </span>
+            </article>
           ))}
         </div>
       )}

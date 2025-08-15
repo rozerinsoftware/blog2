@@ -18,10 +18,12 @@
         "name": "next"
       }
     ],
-    "paths": {
-      "@/*": ["./src/*"]
-    }
+   "paths": {
+  "@/*": ["./src/*"]  // src içindeki her şeyi @ ile import edebilirsin
+}
+
+
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/lib/src/lib/supabase.js"],
   "exclude": ["node_modules"]
 }

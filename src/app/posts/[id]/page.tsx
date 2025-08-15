@@ -1,116 +1,81 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-import Image from "next/image";
-import pool from "@/lib/db";
-
-function Separator({ className = "" }: { className?: string }) {
-  return (
-    <div
-      className={`h-px w-full bg-gradient-to-r from-transparent via-gray-300 to-transparent dark:via-gray-700 ${className}`}
-    />
-  );
-}
+// src/app/posts/[id]/page.tsx
+import { supabase } from "@/lib/supabaseClient";
 import { notFound } from "next/navigation";
 
-type DbPost = {
+type Post = {
   id: number;
   title: string;
   description: string;
   content: string;
-  coverUrl: string | null;
-  date: string | Date | null;
+  coverUrl?: string;
+  date?: string;
+  created_at?: string;
+  updated_at?: string;
 };
 
-async function getPostById(idParam: string): Promise<DbPost | null> {
-  const [rows] = await pool.query(
-    "SELECT id, title, description, content, coverUrl, date FROM posts WHERE id = ? LIMIT 1",
-    [idParam]
-  );
-  const post = Array.isArray(rows) && rows.length > 0 ? (rows[0] as DbPost) : null;
-  return post;
-}
-
+// ✅ Static params oluşturma
 export async function generateStaticParams() {
-  const [rows] = await pool.query("SELECT id FROM posts ORDER BY id DESC LIMIT 50");
-  const ids = Array.isArray(rows) ? rows.map((r: any) => ({ id: String(r.id) })) : [];
-  return ids;
+  const { data, error } = await supabase
+    .from("posts")
+    .select("id")
+    .order("id", { ascending: false })
+    .limit(50);
+
+  if (error) {
+    console.error("Supabase error in generateStaticParams:", error);
+    return [];
+  }
+
+  return (data || []).map((post) => ({
+    id: String(post.id),
+  }));
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}): Promise<Metadata> {
-  const { id } = await params;
-  const post = await getPostById(id);
-  if (!post) return { title: "Yazı Bulunamadı" };
-  return {
-    title: `${post.title} | Blog`,
-    description: post.description,
-  };
+// ✅ Tek bir post verisini çekme
+async function getPostById(id: string): Promise<Post | null> {
+  const { data, error } = await supabase
+    .from("posts")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) {
+    console.error("Supabase error in getPostById:", error);
+    return null;
+  }
+
+  return data as Post;
 }
 
-export default async function PostPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
-  const post = await getPostById(id);
-  if (!post) return notFound();
+export default async function PostPage({ params }: { params: { id: string } }) {
+  const post = await getPostById(params.id);
 
-  // İçeriği güvenli string'e çevir
-  const rawContent =
-    typeof post.content === "string"
-      ? post.content
-      : post.content == null
-      ? ""
-      : String(post.content);
-  const hasHtmlTags = /<[^>]+>/.test(rawContent);
-
-  function formatDate(value: string | Date | null): string {
-    if (!value) return "";
-    try {
-      const d = value instanceof Date ? value : new Date(value);
-      return d.toLocaleDateString("tr-TR", { year: "numeric", month: "long", day: "2-digit" });
-    } catch {
-      return String(value);
-    }
+  if (!post) {
+    return notFound();
   }
 
   return (
-    <main className="p-8 space-y-6">
-      <Link href="/" className="text-sm text-blue-600 hover:underline">
-        ← Ana sayfaya dön
-      </Link>
-
-      <div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-white/10">
-        <img
-          src={(post.coverUrl || "").trim().replace(/^\/+/, '').startsWith('http') ? (post.coverUrl as string) : (post.coverUrl ? `https://${post.coverUrl}` : "https://placehold.co/1280x720.png?text=No+Image")}
-          alt={post.title}
-          className="h-auto w-full object-cover"
+    <main className="container mx-auto px-4 py-8">
+      <article>
+        <h1 className="text-3xl font-bold mb-4">{post.title}</h1>
+        {post.coverUrl && (
+          <img
+            src={post.coverUrl}
+            alt={post.title}
+            className="w-full max-h-[400px] object-cover mb-4"
+          />
+        )}
+        <p className="text-gray-600 mb-4">{post.description}</p>
+        <div
+          className="prose"
+          dangerouslySetInnerHTML={{ __html: post.content }}
         />
-      </div>
-
-      <article className="rounded-2xl border border-gray-200 bg-white p-6 md:p-8 dark:border-white/10 dark:bg-slate-900">
-        <header className="mb-4">
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">{post.title}</h1>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{formatDate(post.date)}</p>
-          <p className="mt-2 text-slate-700 dark:text-gray-300">{post.description}</p>
-        </header>
-        <Separator className="my-6" />
-
-        <section className="mt-6 text-slate-800 dark:text-gray-200">
-          {rawContent.trim().length === 0 ? (
-            <p className="text-gray-500">İçerik bulunamadı.</p>
-          ) : hasHtmlTags ? (
-            <div className="prose prose-slate max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: rawContent }} />
-          ) : (
-            <div className="whitespace-pre-line">{rawContent}</div>
-          )}
-        </section>
+        <p className="text-sm text-gray-500 mt-6">
+          {post.date || post.created_at
+            ? new Date(post.date || post.created_at!).toLocaleDateString("tr-TR")
+            : ""}
+        </p>
       </article>
     </main>
   );
 }
-
