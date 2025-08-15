@@ -2,6 +2,7 @@
 import { supabase } from "@/lib/supabaseClient";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 
 type Post = {
   id: number;
@@ -83,10 +84,11 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
           {/* Hero Image */}
           {post.cover_url && (
             <div className="relative h-64 md:h-96 overflow-hidden">
-              <img
+              <Image
                 src={post.cover_url}
                 alt={post.title}
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
             </div>

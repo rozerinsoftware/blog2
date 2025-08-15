@@ -20,7 +20,7 @@ export default async function handler(req, res) {
     }
 
     // Önce kullanıcının zaten var olup olmadığını kontrol et
-    const { data: existingUser, error: loginError } = await supabase.auth.signInWithPassword({
+    const { data: existingUser } = await supabase.auth.signInWithPassword({
       email: trimmedEmail,
       password: password,
     });

@@ -28,15 +28,16 @@ export default function AdminPage() {
         // Geçici olarak rol kontrolünü kaldır
         console.log("Kullanıcı bilgileri:", data.user);
         
-      } catch (err: any) {
-        setError(err.message || "Bilinmeyen hata");
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : "Bilinmeyen hata";
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }
     }
 
     checkAdmin();
-  }, []);
+  }, [router]);
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
