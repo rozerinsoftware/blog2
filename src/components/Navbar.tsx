@@ -8,10 +8,8 @@ type User = { id: string; email: string; role: string } | null;
 
 export default function Navbar() {
   const [user, setUser] = useState<User | undefined>(undefined);
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
     async function load() {
       try {
         const res = await fetch("/api/me", {
@@ -20,10 +18,11 @@ export default function Navbar() {
         });
         const data = await res.json();
         setUser(data?.user ?? null);
-      } catch (error) {
+      } catch {
         setUser(null);
       }
     }
+    
     load();
   }, []);
 
@@ -45,7 +44,7 @@ export default function Navbar() {
               Anasayfa
             </Link>
             {/* Admin butonu anasayfanın yanında */}
-            {mounted && user?.role === "admin" && (
+            {user?.role === "admin" && (
               <Link
                 className="px-3 py-1.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-md hover:from-purple-700 hover:to-pink-700 transition-all text-sm font-medium"
                 href="/admin"
@@ -57,7 +56,7 @@ export default function Navbar() {
         </div>
         <div className="flex items-center gap-3">
           {/* Giriş yapılmışsa sadece çıkış butonu, yapılmamışsa giriş/kayıt butonları */}
-          <AuthMenu />
+          <AuthMenu user={user} />
         </div>
       </nav>
     </header>

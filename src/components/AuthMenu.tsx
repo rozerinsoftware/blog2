@@ -1,39 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import LogoutButton from "./LogoutButton";
 
 type User = { id: string; email: string; role: string } | null;
 
-export default function AuthMenu() {
-  const [user, setUser] = useState<User | undefined>(undefined);
-  const [mounted, setMounted] = useState(false);
+interface AuthMenuProps {
+  user: User | undefined;
+}
 
-  useEffect(() => {
-    setMounted(true);
-    async function load() {
-      try {
-        const res = await fetch("/api/me", {
-          cache: "no-store",
-          credentials: "include",
-        });
-        const data = await res.json();
-        console.log("AuthMenu - User data:", data); // Debug için
-        setUser(data?.user ?? null);
-      } catch (error) {
-        console.error("AuthMenu - Error:", error); // Debug için
-        setUser(null);
-      }
-    }
-    load();
-  }, []);
-
-  // Debug için user bilgisini göster
-  console.log("AuthMenu - Current user:", user, "mounted:", mounted);
-
-  if (!mounted) {
-    return <div className="h-6 w-20 animate-pulse rounded bg-gray-100" />;
-  }
+export default function AuthMenu({ user }: AuthMenuProps) {
 
   if (user === undefined) {
     return <div className="h-6 w-20 animate-pulse rounded bg-gray-100" />;
