@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import cookie from "cookie";
+import { serialize, parse } from "cookie";
 
 const JWT_COOKIE_NAME = process.env.JWT_COOKIE_NAME || "blog_token";
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d"; // örn. 7d, 12h
@@ -29,7 +29,7 @@ export function verifyAuthToken(token) {
 
 export function setAuthCookie(res, token) {
   const isProd = process.env.NODE_ENV === "production";
-  const serialized = cookie.serialize(JWT_COOKIE_NAME, token, {
+  const serialized = serialize(JWT_COOKIE_NAME, token, {
     httpOnly: true,
     secure: isProd,
     sameSite: "lax",
@@ -42,7 +42,7 @@ export function setAuthCookie(res, token) {
 
 export function clearAuthCookie(res) {
   const isProd = process.env.NODE_ENV === "production";
-  const serialized = cookie.serialize(JWT_COOKIE_NAME, "", {
+  const serialized = serialize(JWT_COOKIE_NAME, "", {
     httpOnly: true,
     secure: isProd,
     sameSite: "lax",
@@ -55,7 +55,7 @@ export function clearAuthCookie(res) {
 export function getTokenFromRequest(req) {
   const header = req.headers?.cookie;
   if (!header) return null;
-  const parsed = cookie.parse(header);
+  const parsed = parse(header);
   return parsed[JWT_COOKIE_NAME] || null;
 }
 
