@@ -1,0 +1,5 @@
+[33me5cfc3a[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Remove all imports from dashboard - make it static
+[33mfd1c266[m Simplify dashboard - remove all problematic imports
+[33m4e45f39[m Fix AdminNav import path in dashboard
+[33m47c4ac9[m Fix build errors - add missing components and update dashboard for Supabase
+[33m92668e8[m misafir giriş eklendi
