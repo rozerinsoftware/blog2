@@ -55,8 +55,9 @@ function formatDate(date: string | null): string {
   });
 }
 
-export default async function PostPage({ params }: { params: { id: string } }) {
-  const post = await getPostById(params.id);
+export default async function PostPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const post = await getPostById(id);
 
   if (!post) {
     return notFound();
