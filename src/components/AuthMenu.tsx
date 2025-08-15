@@ -18,13 +18,18 @@ export default function AuthMenu() {
           credentials: "include",
         });
         const data = await res.json();
+        console.log("AuthMenu - User data:", data); // Debug için
         setUser(data?.user ?? null);
       } catch (error) {
+        console.error("AuthMenu - Error:", error); // Debug için
         setUser(null);
       }
     }
     load();
   }, []);
+
+  // Debug için user bilgisini göster
+  console.log("AuthMenu - Current user:", user, "mounted:", mounted);
 
   if (!mounted) {
     return <div className="h-6 w-20 animate-pulse rounded bg-gray-100" />;

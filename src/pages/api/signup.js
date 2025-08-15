@@ -19,7 +19,33 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, message: "Email geçerli olmalı ve şifre en az 6 karakter olmalı" });
     }
 
-    // Supabase ile kullanıcı oluştur
+    // Önce kullanıcının zaten var olup olmadığını kontrol et
+    const { data: existingUser, error: loginError } = await supabase.auth.signInWithPassword({
+      email: trimmedEmail,
+      password: password,
+    });
+
+    if (existingUser.user) {
+      // Kullanıcı zaten var, direkt giriş yap
+      const role = existingUser.user?.raw_user_meta_data?.role || "user";
+      const token = signAuthToken({ 
+        id: existingUser.user.id, 
+        email: existingUser.user.email, 
+        role 
+      });
+      setAuthCookie(res, token);
+
+      return res.status(200).json({ 
+        success: true, 
+        user: { 
+          id: existingUser.user.id, 
+          email: existingUser.user.email,
+          role
+        } 
+      });
+    }
+
+    // Yeni kullanıcı oluştur - email doğrulaması olmadan
     const { data, error } = await supabase.auth.signUp({
       email: trimmedEmail,
       password: password,
@@ -31,6 +57,7 @@ export default async function handler(req, res) {
     });
 
     if (error) {
+      console.error("Signup error:", error);
       if (error.message.includes('already registered')) {
         return res.status(409).json({ success: false, message: "Bu e-posta zaten kayıtlı" });
       }
@@ -41,6 +68,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ success: false, message: "Kullanıcı oluşturulamadı" });
     }
 
+    // Email doğrulaması olmadan direkt JWT token oluştur
     const token = signAuthToken({ 
       id: data.user.id, 
       email: data.user.email, 
