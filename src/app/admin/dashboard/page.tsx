@@ -1,23 +1,4 @@
-import { cookies } from "next/headers";
-import { verifyAuthToken } from "@/lib/auth";
-
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-
-export default async function AdminDashboardPage() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(process.env.JWT_COOKIE_NAME || "blog_token")?.value || null;
-  const payload = token ? verifyAuthToken(token) : null;
-  
-  if (!payload || payload.role !== "admin") {
-    return (
-      <main className="mx-auto max-w-3xl p-8">
-        <h1 className="mb-4 text-2xl font-bold">Yetki gerekli</h1>
-        <p className="mb-6 text-gray-600">Bu sayfayı görmek için admin yetkisine sahip olmalısınız.</p>
-      </main>
-    );
-  }
-
+export default function AdminDashboardPage() {
   return (
     <main className="mx-auto max-w-3xl p-8">
       <h1 className="mb-4 text-2xl font-bold">Admin Dashboard</h1>
