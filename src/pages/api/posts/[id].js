@@ -1,56 +1,85 @@
-// src/pages/api/posts/index.ts
 import { supabase } from "../../../lib/supabaseClient";
-import { getTokenFromRequest, verifyAuthToken } from "../../../lib/auth";
 
 export default async function handler(req, res) {
-  function isValidDateString(value) {
-    if (!value) return true;
-    if (typeof value !== "string") return false;
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
-    const [y, m, d] = value.split("-").map(Number);
-    const dt = new Date(Date.UTC(y, m - 1, d));
-    return (
-      dt.getUTCFullYear() === y &&
-      dt.getUTCMonth() === m - 1 &&
-      dt.getUTCDate() === d
-    );
-  }
+  const { id } = req.query;
 
   if (req.method === "GET") {
-    const { data, error } = await supabase
-      .from("posts")
-      .select("*")
-      .order("id", { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from('posts')
+        .select('*')
+        .eq('id', id)
+        .single();
 
-    if (error) return res.status(500).json({ success: false, message: "Sunucu hatası" });
+      if (error) {
+        if (error.code === 'PGRST116') {
+          return res.status(404).json({ message: "Yazı bulunamadı" });
+        }
+        throw error;
+      }
 
-    return res.status(200).json({ success: true, posts: data });
+      return res.status(200).json({ post: data });
+    } catch (error) {
+      console.error("Post fetch error:", error);
+      return res.status(500).json({ message: "Yazı yüklenirken hata oluştu" });
+    }
   }
 
-  if (req.method === "POST") {
-    const token = getTokenFromRequest(req);
-    const payload = token ? verifyAuthToken(token) : null;
-    if (!payload || payload.role !== "admin") {
-      return res.status(401).json({ success: false, message: "Yetkisiz" });
+  if (req.method === "PATCH") {
+    try {
+      const { title, description, content, cover_url, date } = req.body;
+
+      if (!title || !description || !content) {
+        return res.status(400).json({ message: "Başlık, açıklama ve içerik gereklidir" });
+      }
+
+      const { data, error } = await supabase
+        .from('posts')
+        .update({
+          title,
+          description,
+          content,
+          cover_url: cover_url || null,
+          date: date || null,
+        })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') {
+          return res.status(404).json({ message: "Yazı bulunamadı" });
+        }
+        throw error;
+      }
+
+      return res.status(200).json({ post: data });
+    } catch (error) {
+      console.error("Post update error:", error);
+      return res.status(500).json({ message: "Yazı güncellenirken hata oluştu" });
     }
-
-    const { title, description, content, coverUrl, date } = req.body || {};
-    if (!title || !description || !content) {
-      return res.status(400).json({ success: false, message: "Eksik alanlar" });
-    }
-    if (!isValidDateString(date)) {
-      return res.status(400).json({ success: false, message: "Geçersiz tarih formatı. YYYY-MM-DD girin." });
-    }
-
-    const { data, error } = await supabase.from("posts").insert([
-      { title, description, content, coverUrl: coverUrl || "", date: date || null },
-    ]);
-
-    if (error) return res.status(500).json({ success: false, message: "Sunucu hatası" });
-
-    return res.status(201).json({ success: true, id: data[0].id });
   }
 
-  res.setHeader("Allow", ["GET", "POST"]);
-  return res.status(405).json({ success: false, message: "Method Not Allowed" });
+  if (req.method === "DELETE") {
+    try {
+      const { error } = await supabase
+        .from('posts')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        if (error.code === 'PGRST116') {
+          return res.status(404).json({ message: "Yazı bulunamadı" });
+        }
+        throw error;
+      }
+
+      return res.status(200).json({ message: "Yazı silindi" });
+    } catch (error) {
+      console.error("Post delete error:", error);
+      return res.status(500).json({ message: "Yazı silinirken hata oluştu" });
+    }
+  }
+
+  return res.status(405).json({ message: "Method not allowed" });
 }

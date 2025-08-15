@@ -1,5 +1,4 @@
-import pool, { ensureDatabaseAndSchema } from "../../lib/db";
-import bcrypt from "bcryptjs";
+import { supabase } from "../../lib/supabaseClient";
 import { signAuthToken, setAuthCookie } from "../../lib/auth";
 
 export default async function handler(req, res) {
@@ -9,7 +8,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    await ensureDatabaseAndSchema();
     const { email, password } = req.body || {};
 
     if (typeof email !== "string" || typeof password !== "string") {
@@ -21,29 +19,43 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, message: "Email geçerli olmalı ve şifre en az 6 karakter olmalı" });
     }
 
-    // Kullanıcı var mı?
-    const [existingRows] = await pool.query(
-      "SELECT id FROM users WHERE email = ? LIMIT 1",
-      [trimmedEmail]
-    );
-    if (Array.isArray(existingRows) && existingRows.length > 0) {
-      return res.status(409).json({ success: false, message: "Bu e-posta zaten kayıtlı" });
+    // Supabase ile kullanıcı oluştur
+    const { data, error } = await supabase.auth.signUp({
+      email: trimmedEmail,
+      password: password,
+      options: {
+        data: {
+          role: 'user'
+        }
+      }
+    });
+
+    if (error) {
+      if (error.message.includes('already registered')) {
+        return res.status(409).json({ success: false, message: "Bu e-posta zaten kayıtlı" });
+      }
+      return res.status(400).json({ success: false, message: error.message });
     }
 
-    // Şifre hashle
-    const hashed = await bcrypt.hash(password, 10);
+    if (!data.user) {
+      return res.status(500).json({ success: false, message: "Kullanıcı oluşturulamadı" });
+    }
 
-    // Kaydet
-    const [result] = await pool.query(
-      "INSERT INTO users (email, password, role) VALUES (?, ?, 'user')",
-      [trimmedEmail, hashed]
-    );
-
-    const userId = result?.insertId;
-    const token = signAuthToken({ id: userId, email: trimmedEmail, role: 'user' });
+    const token = signAuthToken({ 
+      id: data.user.id, 
+      email: data.user.email, 
+      role: 'user' 
+    });
     setAuthCookie(res, token);
 
-    return res.status(201).json({ success: true, user: { id: userId, email: trimmedEmail } });
+    return res.status(201).json({ 
+      success: true, 
+      user: { 
+        id: data.user.id, 
+        email: data.user.email,
+        role: 'user'
+      } 
+    });
   } catch (error) {
     console.error("/api/signup error:", error);
     const message =

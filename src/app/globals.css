@@ -1,22 +1,6 @@
-@import "tailwindcss";
-
 :root {
-  --background: #ffffff; /* düz beyaz arka plan */
-  --foreground: #0f172a; /* slate-900 */
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #ffffff; /* dark modda da beyaz isteniyor */
-    --foreground: #0f172a;
-  }
+  --background: #ffffff;
+  --foreground: #0f172a;
 }
 
 body {

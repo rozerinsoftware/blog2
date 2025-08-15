@@ -6,7 +6,7 @@ type PostRow = {
   id: number;
   title: string;
   description: string;
-  coverUrl?: string;
+  cover_url?: string;
   date?: string | null;
 };
 
@@ -70,7 +70,7 @@ export default function AdminPostsPanel() {
       const res = await fetch("/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, description, content, coverUrl, date }),
+        body: JSON.stringify({ title, description, content, cover_url: coverUrl, date }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || "Oluşturma hatası");
@@ -93,11 +93,11 @@ export default function AdminPostsPanel() {
       const res = await fetch(`/api/posts/${id}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || "Detay okunamadı");
-      const p = data.post as { title: string; description: string; content: string; coverUrl?: string | null; date?: string | null };
+      const p = data.post as { title: string; description: string; content: string; cover_url?: string | null; date?: string | null };
       setEditTitle(p.title || "");
       setEditDescription(p.description || "");
       setEditContent(p.content || "");
-      setEditCoverUrl(p.coverUrl || "");
+      setEditCoverUrl(p.cover_url || "");
       setEditDate(p.date || "");
       setEditingId(id);
     } catch (err: unknown) {
@@ -122,7 +122,7 @@ export default function AdminPostsPanel() {
           title: editTitle,
           description: editDescription,
           content: editContent,
-          coverUrl: editCoverUrl,
+          cover_url: editCoverUrl,
           date: editDate || null,
         }),
       });

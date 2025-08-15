@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Link from "next/link";
-import AuthMenu from "@/components/AuthMenu";
-import { cookies } from "next/headers";
-import { verifyAuthToken } from "@/lib/auth";
+import Navbar from "@/components/Navbar";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -24,31 +21,16 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(process.env.JWT_COOKIE_NAME || "blog_token")?.value || null;
-  const payload = token ? verifyAuthToken(token) : null;
-
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
+      <head>
+        <script src="https://cdn.tailwindcss.com"></script>
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <header className="border-b border-gray-200 bg-white/80 backdrop-blur">
-          <nav className="mx-auto flex max-w-5xl items-center justify-between p-4">
-            <div className="flex items-center gap-4">
-              <Link className="font-semibold" href="/" prefetch={false}>Anasayfa</Link>
-              {payload?.role === 'admin' && (
-                <Link className="text-gray-700 hover:underline" href="/admin" prefetch={false}>Admin</Link>
-              )}
-            </div>
-            <div className="flex items-center gap-3">
-              <AuthMenu />
-            </div>
-          </nav>
-        </header>
+        <Navbar />
         <main>{children}</main>
       </body>
     </html>

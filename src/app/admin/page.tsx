@@ -1,57 +1,33 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { useRouter } from "next/navigation";
 
-type Post = {
-  id: number;
-  title: string;
-  description: string;
-  content: string;
-  coverUrl?: string | null;
-  date?: string | null;
-};
-
-type User = {
-  id: string;
-  email: string;
-  role?: string;
-};
+const AdminPostsPanel = dynamic(() => import("./posts-panel"), { ssr: false });
 
 export default function AdminPage() {
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   useEffect(() => {
-    async function fetchData() {
+    async function checkAdmin() {
       try {
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        if (userError) throw userError;
-        if (!user) throw new Error("Giriş yapmalısınız");
+        const res = await fetch("/api/me", { 
+          cache: "no-store", 
+          credentials: "include" 
+        });
+        const data = await res.json();
+        
+        if (!data.user) {
+          router.push("/login");
+          return;
+        }
 
-        const role = (user.user_metadata as any)?.role || "user";
-        if (role !== "admin") throw new Error("Yetkisiz erişim");
-
-        setCurrentUser({ id: user.id, email: user.email!, role });
-
-        // Posts çek
-        const { data: postsData, error: postsError } = await supabase
-          .from("posts")
-          .select("*")
-          .order("id", { ascending: false });
-        if (postsError) throw postsError;
-        setPosts(postsData || []);
-
-        // Users çek
-        const { data: usersData, error: usersError } = await supabase
-          .from("users")
-          .select("*")
-          .order("created_at", { ascending: false });
-        if (usersError) throw usersError;
-        setUsers(usersData || []);
+        // Geçici olarak rol kontrolünü kaldır
+        console.log("Kullanıcı bilgileri:", data.user);
+        
       } catch (err: any) {
         setError(err.message || "Bilinmeyen hata");
       } finally {
@@ -59,50 +35,41 @@ export default function AdminPage() {
       }
     }
 
-    fetchData();
+    checkAdmin();
   }, []);
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    window.location.reload();
-  };
-
-  if (loading) return <p>Yükleniyor...</p>;
-  if (error) return <p className="text-red-500">{error}</p>;
-
-  return (
-    <main className="container mx-auto p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Admin Paneli</h1>
-        <button
-          onClick={handleSignOut}
-          className="px-4 py-2 bg-red-500 text-white rounded"
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p className="text-gray-600">Admin paneli yükleniyor...</p>
+      </div>
+    </div>
+  );
+  
+  if (error) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-center">
+        <p className="text-red-500 mb-4">{error}</p>
+        <button 
+          onClick={() => router.push("/")}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
         >
-          Çıkış Yap
+          Ana Sayfaya Dön
         </button>
       </div>
+    </div>
+  );
 
-      {/* Posts Listesi */}
-      <section className="mb-8">
-        <h2 className="text-2xl font-semibold mb-2">Posts</h2>
-        <ul className="list-disc list-inside">
-          {posts.map((p) => (
-            <li key={p.id}>{p.title}</li>
-          ))}
-        </ul>
-      </section>
-
-      {/* Users Listesi */}
-      <section>
-        <h2 className="text-2xl font-semibold mb-2">Users</h2>
-        <ul className="list-disc list-inside">
-          {users.map((u) => (
-            <li key={u.id}>
-              {u.email} - {u.role || "user"}
-            </li>
-          ))}
-        </ul>
-      </section>
-    </main>
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Admin Paneli</h1>
+          <p className="text-gray-600 mt-2">Blog yazılarını yönetin</p>
+        </div>
+        <AdminPostsPanel />
+      </div>
+    </div>
   );
 }
