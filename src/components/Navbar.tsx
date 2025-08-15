@@ -8,6 +8,7 @@ type User = { id: string; email: string; role: string } | null;
 
 export default function Navbar() {
   const [user, setUser] = useState<User | undefined>(undefined);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
@@ -20,6 +21,8 @@ export default function Navbar() {
         setUser(data?.user ?? null);
       } catch {
         setUser(null);
+      } finally {
+        setLoading(false);
       }
     }
     
@@ -44,7 +47,7 @@ export default function Navbar() {
               Anasayfa
             </Link>
             {/* Admin butonu anasayfanın yanında */}
-            {user?.role === "admin" && (
+            {!loading && user?.role === "admin" && (
               <Link
                 className="px-3 py-1.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-md hover:from-purple-700 hover:to-pink-700 transition-all text-sm font-medium"
                 href="/admin"
@@ -56,7 +59,7 @@ export default function Navbar() {
         </div>
         <div className="flex items-center gap-3">
           {/* Giriş yapılmışsa sadece çıkış butonu, yapılmamışsa giriş/kayıt butonları */}
-          <AuthMenu user={user} />
+          <AuthMenu user={user} loading={loading} />
         </div>
       </nav>
     </header>

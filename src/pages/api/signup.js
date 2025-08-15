@@ -52,7 +52,8 @@ export default async function handler(req, res) {
       options: {
         data: {
           role: 'user'
-        }
+        },
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3003'}/auth/callback`
       }
     });
 

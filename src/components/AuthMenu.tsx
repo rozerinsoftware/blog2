@@ -6,9 +6,14 @@ type User = { id: string; email: string; role: string } | null;
 
 interface AuthMenuProps {
   user: User | undefined;
+  loading: boolean;
 }
 
-export default function AuthMenu({ user }: AuthMenuProps) {
+export default function AuthMenu({ user, loading }: AuthMenuProps) {
+
+  if (loading) {
+    return <div className="h-6 w-20 animate-pulse rounded bg-gray-100" />;
+  }
 
   if (user === undefined) {
     return <div className="h-6 w-20 animate-pulse rounded bg-gray-100" />;
