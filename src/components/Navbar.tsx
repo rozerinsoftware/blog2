@@ -13,16 +13,20 @@ export default function Navbar() {
   useEffect(() => {
     async function load() {
       try {
+        console.log("Navbar - Loading user...");
         const res = await fetch("/api/me", {
           cache: "no-store",
           credentials: "include",
         });
         const data = await res.json();
+        console.log("Navbar - User data:", data?.user);
         setUser(data?.user ?? null);
-      } catch {
+      } catch (error) {
+        console.error("Navbar - Error:", error);
         setUser(null);
       } finally {
         setLoading(false);
+        console.log("Navbar - Loading finished");
       }
     }
     
@@ -54,6 +58,12 @@ export default function Navbar() {
               >
                 🛠️ Admin Paneli
               </Link>
+            )}
+            {/* Debug info */}
+            {!loading && (
+              <div className="text-xs text-gray-500">
+                User: {user ? `${user.email} (${user.role})` : 'Not logged in'}
+              </div>
             )}
           </div>
         </div>
