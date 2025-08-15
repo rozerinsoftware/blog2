@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/db";
-import AdminNav from "../AdminNav";
+import AdminNav from "@/components/AdminNav";
 import { cookies } from "next/headers";
 import { verifyAuthToken } from "@/lib/auth";
 import BarChartMini from "@/components/BarChartMini";
